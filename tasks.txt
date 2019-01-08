@@ -1,0 +1,115 @@
+
+1.1
+ikuula@lx8-fuxi214:~$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS               NAMES
+593ca621242a        nginx               "nginx -g 'daemon of…"   About a minute ago   Up About a minute   80/tcp              elastic_boyd
+ikuula@lx8-fuxi214:~$
+
+
+--
+1.2
+
+ikuula@lx8-fuxi214:~$ docker ps -a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS           NAMES
+
+ikuula@lx8-fuxi214:~$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+ikuula@lx8-fuxi214:~$
+
+--
+1.3
+
+docker run -d --rm -it --name lol2 nginx sh -c 'apt-get update; apt-get -y install curl; read website; sleep 3; curl $website'
+
+--
+
+1.4
+
+FROM ubuntu:16.04 
+RUN apt-get update && apt-get install -y curl 
+CMD ["bin/bash", "-c", "read website; sleep 3; curl http://$website;"]
+
+--
+
+1.5
+
+FROM ubuntu:16.04
+EXPOSE 5000
+WORKDIR /frontend
+RUN apt-get update
+RUN apt install -y curl
+RUN apt install -y unzip
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
+RUN apt install -y nodejs
+RUN npm install -g serve
+RUN curl -L https://github.com/docker-hy/frontend-example-docker/archive/master.zip --output tmp.zip
+RUN unzip tmp.zip
+RUN rm tmp.zip
+RUN cd "frontend-example-docker-master" && npm install && npm run build
+CMD /bin/bash -c 'sleep 3 && serve -s -l 5000 frontend-example-docker-master/dist'
+..
+
+..
+docker run -it -p 5000:5000 frontend
+
+--
+
+1.6
+
+FROM ubuntu:16.04
+EXPOSE 8000
+WORKDIR /backend
+RUN apt-get update
+RUN apt install -y curl
+RUN apt install -y unzip
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
+RUN apt install -y nodejs
+RUN curl -L https://github.com/docker-hy/backend-example-docker/archive/master.zip --output tmp.zip
+RUN unzip tmp.zip
+RUN rm tmp.zip
+RUN mv backend-example-docker-master/* ./
+RUN npm install
+CMD /bin/bash -c 'npm start'
+
+..
+
+
+touch logs.txt && docker run -v $(pwd)/logs.txt:/backend/logs.txt -p 8000:8000 backend
+
+--
+
+1.7
+
+FROM ubuntu:16.04
+EXPOSE 5000
+EXPOSE 8000
+ENV API_URL http://localhost:8000
+ENV FRONT_URL http://localhost:5000
+WORKDIR /payload
+RUN apt-get update
+RUN apt install -y curl
+RUN apt install -y unzip
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
+RUN apt install -y nodejs
+RUN npm install -g serve
+
+RUN curl -L https://github.com/docker-hy/frontend-example-docker/archive/master.zip --output tmp.zip
+RUN unzip tmp.zip
+RUN rm tmp.zip
+RUN cd "frontend-example-docker-master" && npm install
+
+RUN cd ..
+RUN curl -L https://github.com/docker-hy/backend-example-docker/archive/master.zip --output tmp.zip
+RUN unzip tmp.zip
+RUN rm tmp.zip
+RUN cd "backend-example-docker-master" && npm install
+
+CMD /bin/bash -c 'sleep 3 && cd frontend-example-docker-master && npm start & \
+    cd backend-example-docker-master && npm start'
+
+...
+
+docker run -p 5000:5000 -p 8000:8000 both
+
+--
+
