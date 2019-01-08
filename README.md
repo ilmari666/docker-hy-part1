@@ -1,2 +1,2 @@
 tasks.txt
-- Tasks 1.1 - 1.7
+- Tasks 1.1 - 1.8
